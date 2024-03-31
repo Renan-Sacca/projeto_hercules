@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log de Mensagens</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="log-container" class="mb-3">
+            <!-- Log de mensagens será exibido aqui -->
+        </div>
+        <div class="input-group mb-3">
+            <input type="text" id="message-input" class="form-control" placeholder="Digite uma mensagem">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="btn-tcp" type="button" class="btpn btn-secondary btn-tcp active" onclick="selectProtocol('tcp')">TCP</button>
+            <button id="btn-udp" type="button" class="btn btn-secondary btn-udp" onclick="selectProtocol('udp')">UDP</button>
+            <button id="btn-ascii" type="button" class="btn btn-secondary btn-ascii active" onclick="selectFormat('ascii')">ASCII</button>
+            <button id="btn-hex" type="button" class="btn btn-secondary btn-hex" onclick="selectFormat('hex')">Hex</button>
+        </div>
+        <select id="server-select" class="custom-select mb-3">
+            <option selected>Selecione um servidor</option>
+            <option value="localhost:65432">Servidor 1</option>
+            <option value="192.168.0.1:4000">Servidor 2</option>
+            <!-- Adicione mais opções conforme necessário -->
+        </select>
+        <button id="btn-connect" type="button" class="btn btn-primary" onclick="toggleConnection()">Conectar</button>
+        <button id="btn-disconnect" type="button" class="btn btn-secondary" onclick="disconnectWebSocket()" style="display: none;">Desconectar</button>
+        <button type="button" class="btn btn-primary" onclick="saveLog()">Salvar Log</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

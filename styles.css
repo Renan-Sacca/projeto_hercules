@@ -1,0 +1,42 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f8f9fa;
+}
+.container {
+    margin-top: 20px;
+}
+#log-container {
+    width: 400px;
+    height: 300px;
+    border: 1px solid #ced4da;
+    overflow-y: auto;
+    padding: 10px;
+}
+#message-input {
+    width: 300px;
+    margin-right: 10px;
+}
+.btn-group {
+    margin-bottom: 10px;
+}
+.btn-group .btn {
+    margin-right: 10px;
+}
+.btn-tcp.active,
+.btn-udp.active,
+.btn-ascii.active,
+.btn-hex.active {
+    background-color: #007bff;
+    color: white;
+}
+.btn-tcp:not(.active):hover,
+.btn-udp:not(.active):hover,
+.btn-ascii:not(.active):hover,
+.btn-hex:not(.active):hover {
+    background-color: #6c757d;
+    color: white;
+}
