@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caixa de Pesquisa em Select</title>
+<style>
+    /* Estilos para a caixa de pesquisa */
+    #search-box {
+        width: 100%;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+</style>
+</head>
+<body>
+    <h1>Caixa de Pesquisa em Select</h1>
+    <select id="my-select">
+        <option value="1">Opção 1</option>
+        <option value="2">Opção 2</option>
+        <option value="3">Opção 3</option>
+        <option value="4">Opção 4</option>
+        <option value="5">Opção 5</option>
+        <option value="6">Opção 6</option>
+        <option value="7">Opção 7</option>
+        <option value="8">Opção 8</option>
+        <option value="9">Opção 9</option>
+        <option value="10">Opção 10</option>
+    </select>
+    <br>
+    <input type="text" id="search-box" placeholder="Pesquisar...">
+    <script>
+        // Função para filtrar as opções do select
+        function filterOptions() {
+            var input, filter, select, options, option, i, txtValue;
+            input = document.getElementById('search-box');
+            filter = input.value.toUpperCase();
+            select = document.getElementById('my-select');
+            options = select.getElementsByTagName('option');
+            for (i = 0; i < options.length; i++) {
+                option = options[i];
+                txtValue = option.textContent || option.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        }
+
+        // Adiciona um evento de input na caixa de pesquisa
+        document.getElementById('search-box').addEventListener('input', filterOptions);
+    </script>
+</body>
+</html>

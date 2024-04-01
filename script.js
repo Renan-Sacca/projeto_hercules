@@ -4,6 +4,20 @@ let ws;
 let messageInput = document.getElementById('message-input');
 let sendButton = document.querySelector('.btn-primary');
 
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("http://localhost:8000/servers")
+    .then(response => response.json())
+    .then(data => {
+        const select = document.getElementById("server-select");
+        data.forEach(server => {
+            const option = document.createElement("option");
+            option.text = server.name;
+            option.value = server.address;
+            select.appendChild(option);
+        });
+    });
+});
+
 // Desabilita o botão de enviar mensagem inicialmente
 sendButton.disabled = true;
 
