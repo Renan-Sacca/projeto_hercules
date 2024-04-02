@@ -31,6 +31,7 @@ async def handle_websocket(websocket, path):
     # Cria a conexão inicial com base no protocolo recebido
     if protocol == "tcp":
         client = create_tcp_connection()
+        client.setblocking(False)  # Configura o socket como não bloqueante
     elif protocol == "udp":
         client = create_udp_connection()
     else:
@@ -38,6 +39,7 @@ async def handle_websocket(websocket, path):
         await websocket.close()
         return
 
+    await websocket.send("nhe")
     try:
         while True:
             # Recebe mensagem do cliente WebSocket
@@ -47,11 +49,6 @@ async def handle_websocket(websocket, path):
             # Envia mensagem para o servidor TCP ou UDP
             try:
                 client.sendall(message.encode())
-                # Recebe resposta do servidor TCP ou UDP e envia de volta para o cliente WebSocket
-                response = client.recv(1024)
-                if message_type == "hex":
-                    response = response.hex()
-                await websocket.send(response.decode())
             except (ConnectionResetError, BrokenPipeError):
                 print(f"Conexão {protocol.upper()} perdida. Tentando reconectar...")
                 client.close()
@@ -59,6 +56,36 @@ async def handle_websocket(websocket, path):
                     try:
                         if protocol == "tcp":
                             client = create_tcp_connection()
+                            client.setblocking(False)  # Configura o socket como não bloqueante
+                        elif protocol == "udp":
+                            client = create_udp_connection()
+                        print(f"Reconexão {protocol.upper()} bem-sucedida.")
+                        break
+                    except ConnectionRefusedError:
+                        print(f"Tentativa de reconexão {protocol.upper()} falhou. Tentando novamente em 1 segundo...")
+                        time.sleep(1)
+
+            # Espera um curto período de tempo para a resposta do servidor TCP
+            await asyncio.sleep(0.1)
+
+            # Tenta receber a resposta do servidor TCP
+            try:
+                response = client.recv(1024)
+                if message_type == "hex":
+                    response = response.hex()
+                print(f"Resposta do servidor {protocol.upper()}: {response}")
+                await websocket.send(response.decode())
+            except BlockingIOError:
+                # Não há resposta disponível, continuar para a próxima iteração do loop
+                pass
+            except (ConnectionResetError, BrokenPipeError):
+                print(f"Conexão {protocol.upper()} perdida. Tentando reconectar...")
+                client.close()
+                while True:
+                    try:
+                        if protocol == "tcp":
+                            client = create_tcp_connection()
+                            client.setblocking(False)  # Configura o socket como não bloqueante
                         elif protocol == "udp":
                             client = create_udp_connection()
                         print(f"Reconexão {protocol.upper()} bem-sucedida.")

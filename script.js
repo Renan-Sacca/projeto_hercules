@@ -3,6 +3,7 @@ let selectedFormat = 'ascii';
 let ws;
 let messageInput = document.getElementById('message-input');
 let sendButton = document.querySelector('.btn-primary');
+let dados_persona = false
 
 document.addEventListener("DOMContentLoaded", function() {
     fetch("http://localhost:8000/servers")
@@ -78,6 +79,8 @@ function sendMessage() {
 }
 
 function receiveMessage(message) {
+    const loadingPopup = document.getElementById('loading-popup');
+    loadingPopup.style.display = 'none';
     const logContainer = document.getElementById('log-container');
     let logMessage = message.data;
     if (selectedFormat === 'hex') {
@@ -88,9 +91,16 @@ function receiveMessage(message) {
 }
 
 function connectWebSocket() {
-    const serverSelect = document.getElementById('server-select');
-    const selectedServer = serverSelect.options[serverSelect.selectedIndex].value;
-    const [server, port] = selectedServer.split(':');
+    let selectedServer;  // Declare selectedServer outside of any block
+  
+    if (dados_persona) {
+      const ip_port = document.getElementById('ip-port-input');
+      selectedServer = ip_port.value;
+    } else {
+      const serverSelect = document.getElementById('server-select');
+      selectedServer = serverSelect.options[serverSelect.selectedIndex].value;
+    }
+    const [server, port] = selectedServer.trim().split(':');  
     const selectedMessageFormat = selectedFormat === 'ascii' ? 'ascii' : 'hex';
 
     const connectionData = [server, port, selectedProtocol, selectedMessageFormat].join(',');
@@ -120,7 +130,7 @@ function connectWebSocket() {
     };
 
     document.getElementById('btn-connect').style.display = 'none';
-            document.getElementById('btn-disconnect').style.display = 'inline-block';
+    document.getElementById('btn-disconnect').style.display = 'inline-block';
        
 }
 
@@ -137,6 +147,8 @@ function updateConnectButtons() {
         btnConnect.style.display = 'inline-block';
         btnDisconnect.style.display = 'none';
         btnGroup.style.display = 'block'; // Mostra os botões de protocolo e tipo
+        const loadingPopup = document.getElementById('loading-popup');
+        loadingPopup.style.display = 'none';
     }
 }
 
@@ -152,6 +164,8 @@ function toggleConnection() {
         disconnectWebSocket();
     } else {
         connectWebSocket();
+        const loadingPopup = document.getElementById('loading-popup');
+        loadingPopup.style.display = 'block';
     }
 }
 
@@ -175,4 +189,20 @@ function hexToString(hex) {
     return str;
 }
 
+function toggleCustom() {
+    const serverSelect = document.getElementById('churrasquinho');
+    const customInput = document.getElementById('ip-port-input');
 
+    // Toggle visibility based on checkbox state
+    if (document.getElementById('custom-ip-checkbox').checked) {
+        serverSelect.style.display = 'none';
+        customInput.style.display = 'block';
+        dados_persona = true
+
+
+    } else {
+        serverSelect.style.display = 'block';
+        customInput.style.display = 'none';
+        dados_persona = false
+    }
+}

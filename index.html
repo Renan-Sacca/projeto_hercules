@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Log de Mensagens</title>
+<script src="socket.io.min.js"></script>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="select2.min.css">
@@ -27,22 +28,45 @@
             <button id="btn-ascii" type="button" class="btn btn-secondary btn-ascii active" onclick="selectFormat('ascii')">ASCII</button>
             <button id="btn-hex" type="button" class="btn btn-secondary btn-hex" onclick="selectFormat('hex')">Hex</button>
         </div>
+
+
+
+        <div class="custom-control custom-checkbox mb-3">
+            <input type="checkbox" class="custom-control-input" id="custom-ip-checkbox" onchange="toggleCustom()">
+            <label class="custom-control-label" for="custom-ip-checkbox">Usar IP e porta personalizados</label>
+        </div>
+        
+        <div id="churrasquinho">
         <select id="server-select" class="custom-select mb-3">
-            <option selected>Selecione um servidor</option>
             <option value="localhost:65432">Servidor 1</option>
-            <option value="192.168.0.1:4000">xesq</option>
-            <!-- Adicione mais opções conforme necessário -->
+            <option value="177.129.4.51:9131">Servidor 2</option>
+            <option value="172.19.1.39:9131">Servidor 3</option>
         </select>
+        </div>
+    
+        <div id="custom-ip-container" class="input-group mb-3">
+            <input type="text" id="ip-port-input" class="form-control" placeholder="IP:Porta">
+        </div>
+
+        
     
         <button id="btn-connect" type="button" class="btn btn-primary" onclick="toggleConnection()">Conectar</button>
         <button id="btn-disconnect" type="button" class="btn btn-secondary" onclick="disconnectWebSocket()" style="display: none;">Desconectar</button>
         <button type="button" class="btn btn-primary" onclick="saveLog()">Salvar Log</button>
+
+    </div>
+
+
+    <div id="loading-popup" class="loading-popup">
+        <div class="loading-message">Conectando no gateway...</div>
     </div>
 
     <script>
+        
         $(document).ready(function() {
             $('#server-select').select2();
         });
+        
     </script>
     <script src="script.js"></script>
 
