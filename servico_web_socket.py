@@ -34,6 +34,7 @@ async def handle_websocket(websocket, path):
         client.setblocking(False)  # Configura o socket como não bloqueante
     elif protocol == "udp":
         client = create_udp_connection()
+        client.setblocking(False)
     else:
         print("Protocolo inválido. Fechando conexão.")
         await websocket.close()
@@ -48,7 +49,13 @@ async def handle_websocket(websocket, path):
 
             # Envia mensagem para o servidor TCP ou UDP
             try:
-                client.sendall(message.encode())
+                if message_type == "hex":
+                    message = bytes.fromhex(message)
+                    #message = message.encode('utf-8')
+                    print(message)
+                else:
+                    message.encode()
+                client.sendall(message)
             except (ConnectionResetError, BrokenPipeError):
                 print(f"Conexão {protocol.upper()} perdida. Tentando reconectar...")
                 client.close()
@@ -59,6 +66,7 @@ async def handle_websocket(websocket, path):
                             client.setblocking(False)  # Configura o socket como não bloqueante
                         elif protocol == "udp":
                             client = create_udp_connection()
+                            client.setblocking(False)
                         print(f"Reconexão {protocol.upper()} bem-sucedida.")
                         break
                     except ConnectionRefusedError:

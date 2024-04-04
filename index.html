@@ -13,13 +13,23 @@
 </head>
 <body>
     <div class="container">
-        <div id="log-container" class="mb-3">
-            <!-- Log de mensagens será exibido aqui -->
+        <div class="row">
+            <div class="col-md-6">
+                <div id="log-container" class="mb-3">
+                    <!-- Log de mensagens será exibido aqui -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="pacotes-salvos" class="mb-3">
+                    <!-- Pacotes salvos serão exibidos aqui -->
+                </div>
+            </div>
         </div>
         <div class="input-group mb-3">
             <input type="text" id="message-input" class="form-control" placeholder="Digite uma mensagem">
             <div class="input-group-append">
-                <button class="btn btn-primary" type="button" onclick="sendMessage()">Enviar</button>
+                <button id="botao_enviar" class="btn btn-primary" type="button" onclick="sendMessage('message-input')">Enviar</button>
+                <button id="saveButton" class="btn btn-primary" type="button" onclick="savepacket()">Salvar pacote</button>
             </div>
         </div>
         <div class="btn-group" role="group">
@@ -28,8 +38,6 @@
             <button id="btn-ascii" type="button" class="btn btn-secondary btn-ascii active" onclick="selectFormat('ascii')">ASCII</button>
             <button id="btn-hex" type="button" class="btn btn-secondary btn-hex" onclick="selectFormat('hex')">Hex</button>
         </div>
-
-
 
         <div class="custom-control custom-checkbox mb-3">
             <input type="checkbox" class="custom-control-input" id="custom-ip-checkbox" onchange="toggleCustom()">
@@ -45,29 +53,19 @@
         </div>
     
         <div id="custom-ip-container" class="input-group mb-3">
-            <input type="text" id="ip-port-input" class="form-control" placeholder="IP:Porta">
+            <input type="text" id="ip-port-input" placeholder="IP:Porta">
+            <button id="btn-save-ip" type="button" class="btn btn-primary" onclick="saveconection()">Salvar conexão</button>
         </div>
 
-        
-    
         <button id="btn-connect" type="button" class="btn btn-primary" onclick="toggleConnection()">Conectar</button>
         <button id="btn-disconnect" type="button" class="btn btn-secondary" onclick="disconnectWebSocket()" style="display: none;">Desconectar</button>
         <button type="button" class="btn btn-primary" onclick="saveLog()">Salvar Log</button>
-
     </div>
-
 
     <div id="loading-popup" class="loading-popup">
         <div class="loading-message">Conectando no gateway...</div>
     </div>
 
-    <script>
-        
-        $(document).ready(function() {
-            $('#server-select').select2();
-        });
-        
-    </script>
     <script src="script.js"></script>
 
 </body>

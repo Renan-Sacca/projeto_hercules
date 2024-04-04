@@ -1,0 +1,20 @@
+CREATE TABLE conexoes_salvas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    nome VARCHAR(255) NOT NULL,
+    ip VARCHAR(255) NOT NULL,
+    porta INT NOT NULL,
+    protocolo ENUM('TCP', 'UDP') NOT NULL,
+    tipo_mensagem ENUM('ASCII', 'Hexadecimal') NOT NULL
+);
+     
+
+CREATE TABLE pacotes_enviados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    id_cliente INT NOT NULL,
+    id_conexao INT NOT NULL,
+    dados TEXT NOT NULL,
+    banco_padrao BOOLEAN DEFAULT TRUE,
+    deletado BOOLEAN DEFAULT FALSE
+);

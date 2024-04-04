@@ -1,28 +1,88 @@
 let selectedProtocol = 'tcp';
 let selectedFormat = 'ascii';
 let ws;
-let messageInput = document.getElementById('message-input');
-let sendButton = document.querySelector('.btn-primary');
-let dados_persona = false
+//let sendButton = document.querySelector('.btn-primary');
+let sendButton = document.getElementById('botao_enviar');
 
-document.addEventListener("DOMContentLoaded", function() {
-    fetch("http://localhost:8000/servers")
-    .then(response => response.json())
-    .then(data => {
-        const select = document.getElementById("server-select");
-        data.forEach(server => {
-            const option = document.createElement("option");
-            option.text = server.name;
-            option.value = server.address;
-            select.appendChild(option);
-        });
+let saveButton = document.getElementById('saveButton');
+
+
+let dados_persona = false;
+let cliente = 51;
+let id_conexao = 1;
+let banco = true
+
+$(document).ready(function() {
+    $('#server-select').select2();
+
+    $('#server-select').on('change', function() {
+        const teste = $(this).val()
+        let valorObjeto = JSON.parse(teste);
+        selectProtocol(valorObjeto["protocolo"])
+        selectFormat(valorObjeto["tipo"])
+        banco = valorObjeto["banco"]
+        id_conexao = valorObjeto["id_conexao"]
+        preencherPacotesSalvos();
     });
 });
 
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetch("http://localhost:8000/servers", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({"cliente": cliente})
+    })
+    .then(response => response.json())
+    .then(data => {
+        const select = document.getElementById("server-select");
+        // Ordena os servidores por nome antes de adicionar ao select
+        data.sort((a, b) => a.name.localeCompare(b.name));
+        data.forEach(server => {
+            const option = document.createElement("option");
+            option.text = server.name;
+            option.value = JSON.stringify({"address": server.address, "protocolo":server.protocolo, "tipo": server.tipo, "banco": server.banco, "id_conexao": server.id_conexao});
+            select.appendChild(option);
+        });
+        // Atualiza o Select2 após adicionar as opções
+        $('#' + select.id).select2();
+    });
+});
+
+
+
 // Desabilita o botão de enviar mensagem inicialmente
 sendButton.disabled = true;
+saveButton.disabled = true;
+
+
+function enablesendPacotes() {
+    var sendPacotes = document.getElementsByClassName('btn_pacotes');
+    for (var i = 0; i < sendPacotes.length; i++) {
+        sendPacotes[i].disabled = false;
+    }
+}
+
+// Função para desabilitar o botão de enviar mensagem
+function disablesendPacotes() {
+    var sendPacotes = document.getElementsByClassName('btn_pacotes');
+    for (var i = 0; i < sendPacotes.length; i++) {
+        sendPacotes[i].disabled = true;
+    }
+    //sendPacotes.disabled = true;
+}
 
 // Função para habilitar o botão de enviar mensagem
+function enableSaveButton() {
+    saveButton.disabled = false;
+}
+
+// Função para desabilitar o botão de enviar mensagem
+function disableSaveButton() {
+    saveButton.disabled = true;
+}
 function enableSendButton() {
     sendButton.disabled = false;
 }
@@ -66,12 +126,25 @@ function selectFormat(format) {
     selectedFormat = format;
 }
 
-function sendMessage() {
+function sendMessage(mensagem) {
+    let messageInput = document.getElementById(mensagem);
+
     let message = messageInput.value;
     if (!message.trim()) return; // Não envia mensagens em branco
 
     ws.send(message); // Envia a mensagem para o servidor
 
+    const logContainer = document.getElementById('log-container');
+    logContainer.innerHTML += `<p>Enviado: ${message}</p>`;
+    messageInput.value = '';
+    logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function sendMessageSave(mensagem) {
+    let messageInput = document.getElementById(mensagem);
+    console.log(messageInput)
+    let message = messageInput.value;
+    ws.send(message); // Envia a mensagem para o servidor
     const logContainer = document.getElementById('log-container');
     logContainer.innerHTML += `<p>Enviado: ${message}</p>`;
     messageInput.value = '';
@@ -98,7 +171,11 @@ function connectWebSocket() {
       selectedServer = ip_port.value;
     } else {
       const serverSelect = document.getElementById('server-select');
-      selectedServer = serverSelect.options[serverSelect.selectedIndex].value;
+      opcoes = serverSelect.options[serverSelect.selectedIndex].value;
+      let valorObjeto = JSON.parse(opcoes);
+
+      selectedServer = valorObjeto["address"]
+      console.log(selectedServer)
     }
     const [server, port] = selectedServer.trim().split(':');  
     const selectedMessageFormat = selectedFormat === 'ascii' ? 'ascii' : 'hex';
@@ -112,6 +189,13 @@ function connectWebSocket() {
         ws.send(connectionData);
         enableSendButton(); // Habilita o botão de enviar mensagem
         updateConnectButtons()
+        if (!dados_persona) {
+            enableSaveButton();
+        }
+        $('#server-select').prop('disabled', true);
+
+        enablesendPacotes()
+
     };
 
     ws.onmessage = receiveMessage;
@@ -123,9 +207,12 @@ function connectWebSocket() {
     ws.onclose = function(event) {
         console.log('WebSocket closed:', event);
         disableSendButton(); // Desabilita o botão de enviar mensagem
+        disableSaveButton();
         document.getElementById('btn-connect').style.display = 'inline-block';
         document.getElementById('btn-disconnect').style.display = 'none';
         updateConnectButtons()
+        $('#server-select').prop('disabled', false);
+
             
     };
 
@@ -153,6 +240,7 @@ function updateConnectButtons() {
 }
 
 function disconnectWebSocket() {
+    $('#pacotes-salvos').empty();
     if (ws) {
         ws.close();
         disableSendButton(); // Desabilita o botão de enviar mensagem
@@ -191,7 +279,7 @@ function hexToString(hex) {
 
 function toggleCustom() {
     const serverSelect = document.getElementById('churrasquinho');
-    const customInput = document.getElementById('ip-port-input');
+    const customInput = document.getElementById('custom-ip-container');
 
     // Toggle visibility based on checkbox state
     if (document.getElementById('custom-ip-checkbox').checked) {
@@ -205,4 +293,150 @@ function toggleCustom() {
         customInput.style.display = 'none';
         dados_persona = false
     }
+}
+
+
+function saveconection() {
+    var info = document.getElementById("ip-port-input").value;
+    var nome = prompt("Digite um nome para a informação:", "Nome da informação");
+
+    if (nome != null) {
+        fetch('http://localhost:8000/save_connection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nome: nome, informacao: info, "cliente": cliente , "protocolo": selectedProtocol , "tipo": selectedFormat }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao enviar os dados para a API.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Resposta da API:', data);
+            alert('Informação salva com sucesso!');
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao salvar a informação. Por favor, tente novamente.');
+        });
+    }
+}
+
+
+function savepacket() {
+    var info = document.getElementById("message-input").value;
+    var nome = prompt("Digite um nome para o pacote:", "Nome do pacote");
+
+    if (nome != null) {
+        fetch('http://localhost:8000/save_packet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "id_conexao": id_conexao, "id_cliente": cliente, "dados": info, "banco": banco, "nome": nome }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao enviar os dados para a API.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Resposta da API:', data);
+            preencherPacotesSalvos();
+            alert('Informação salva com sucesso!');
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao salvar a informação. Por favor, tente novamente.');
+        });
+    }
+}
+
+
+function ordenarSelectPorTexto(idSelect) {
+    var select = $('#' + idSelect);
+    var options = select.find('option');
+    options.sort(function(a, b) {
+        if (a.text > b.text) return 1;
+        if (a.text < b.text) return -1;
+        return 0;
+    });
+    select.empty().append(options);
+    select.select2(); // Atualiza o Select2
+}
+
+
+
+function preencherPacotesSalvos() {
+    // Construir a URL da requisição com os parâmetros de consulta
+    var url = `http://localhost:8000/packets?id_cliente=${cliente}&id_conexao=${id_conexao}&banco=${banco}`;
+
+    // Fazer a requisição usando fetch
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            // Limpar o container antes de adicionar os novos pacotes
+            $('#pacotes-salvos').empty();
+            
+            // Iterar sobre os dados da API e adicionar cada pacote ao container
+            data.forEach(function(pacote) {
+                var card = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Nome: ${pacote.nome}</h5>
+                            <p class="card-text">${pacote.pacote}</p>
+                            <button id='botao_pacotes' class="btn btn-primary btn_pacotes" onclick="sendMessageSave('envia_mensagem${pacote.id}')">Enviar</button>
+                            <button id='botao_pacotes' class="btn btn-danger" onclick="del_packet(${pacote.id})">Deletar</button>
+                            <input  type="hidden"  id='envia_mensagem${pacote.id}' value="${pacote.pacote}">
+
+                        </div>
+                    </div>
+                `;
+                $('#pacotes-salvos').append(card);
+                
+            });
+            
+        })
+        .catch(error => {
+            console.error('Erro ao obter os pacotes salvos da API:', error);
+        });
+        setTimeout(function() {
+            disablesendPacotes()
+            console.log("Ação após um segundo");
+        }, 1000);
+        
+}
+
+
+function del_packet(id) {
+    fetch('http://localhost:8000/del_packet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "id": id}),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao enviar os dados para a API.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Resposta da API:', data);
+        alert('Informação salva com sucesso!');
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao salvar a informação. Por favor, tente novamente.');
+    });
+    setTimeout(function() {
+        preencherPacotesSalvos()
+        console.log("Ação após um segundo");
+    }, 1000);
+    
 }

@@ -58,6 +58,6 @@ body {
     text-align: center;
 }
 
-#ip-port-input {
+#custom-ip-container {
     display: none;  /* Initially hide the custom IP/port input */
 }
